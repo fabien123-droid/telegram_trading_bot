@@ -1,6 +1,7 @@
 # Core dependencies
 python-telegram-bot==20.7
-websockets==12.0
+# Laisser pip résoudre automatiquement la version websockets
+websockets
 aiohttp==3.9.1
 asyncio-mqtt==0.16.1
 
@@ -37,7 +38,6 @@ APScheduler==3.10.4
 
 # Configuration
 python-dotenv==1.0.0
-# CORRECTION: Version plus récente avec wheels pré-construits
 pydantic>=2.8.0
 pydantic-settings>=2.3.0
 
@@ -51,7 +51,6 @@ pytz==2023.3
 click==8.1.7
 
 # Web framework
-# CORRECTION: Versions compatibles avec le nouveau pydantic
 fastapi>=0.111.0
 uvicorn>=0.30.0
 

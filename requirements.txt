@@ -37,8 +37,9 @@ APScheduler==3.10.4
 
 # Configuration
 python-dotenv==1.0.0
-pydantic==2.5.2
-pydantic-settings==2.1.0
+# CORRECTION: Version plus récente avec wheels pré-construits
+pydantic>=2.8.0
+pydantic-settings>=2.3.0
 
 # Logging and Monitoring
 loguru==0.7.2
@@ -50,8 +51,9 @@ pytz==2023.3
 click==8.1.7
 
 # Web framework
-fastapi==0.104.1
-uvicorn==0.24.0
+# CORRECTION: Versions compatibles avec le nouveau pydantic
+fastapi>=0.111.0
+uvicorn>=0.30.0
 
 # Data visualization
 matplotlib>=3.8.0

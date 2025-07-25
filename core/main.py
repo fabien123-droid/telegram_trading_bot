@@ -10,12 +10,37 @@ from typing import AsyncGenerator
 
 from loguru import logger
 
+# Importations relatives converties en importations absolutes
 from .config import get_settings, validate_required_settings
 from .logging_config import setup_logging
 from .exceptions import ConfigurationError
-from ..database.database import init_database, close_database
-from ..telegram_bot.bot import TelegramBot
-from ..scheduler.scheduler import TradingScheduler
+
+# Correction des importations relatives problématiques
+try:
+    from database.database import init_database, close_database
+except ImportError:
+    # Fallback si la structure est différente
+    try:
+        from src.database.database import init_database, close_database
+    except ImportError:
+        # Dernier fallback
+        from ..database.database import init_database, close_database
+
+try:
+    from telegram_bot.bot import TelegramBot
+except ImportError:
+    try:
+        from src.telegram_bot.bot import TelegramBot
+    except ImportError:
+        from ..telegram_bot.bot import TelegramBot
+
+try:
+    from scheduler.scheduler import TradingScheduler
+except ImportError:
+    try:
+        from src.scheduler.scheduler import TradingScheduler
+    except ImportError:
+        from ..scheduler.scheduler import TradingScheduler
 
 
 class TradingBotApplication:
@@ -148,4 +173,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

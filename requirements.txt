@@ -56,6 +56,6 @@ uvicorn==0.24.0
 # Data visualization
 matplotlib>=3.8.0
 plotly==5.17.0
-Pillow==10.1.0
+Pillow>=10.2.0
 
 python-deriv-api==0.1.6

@@ -140,23 +140,21 @@ class AppSettings(BaseSettings):
     host: str = Field(default="0.0.0.0", env="HOST")
     port: int = Field(default=8000, env="PORT")
     
+    # DÉCLARER LES SOUS-CONFIGURATIONS COMME CHAMPS PYDANTIC
+    database: DatabaseSettings = Field(default_factory=DatabaseSettings)
+    telegram: TelegramSettings = Field(default_factory=TelegramSettings)
+    deriv: DerivSettings = Field(default_factory=DerivSettings)
+    binance: BinanceSettings = Field(default_factory=BinanceSettings)
+    mt5: MT5Settings = Field(default_factory=MT5Settings)
+    ib: IBSettings = Field(default_factory=IBSettings)
+    security: SecuritySettings = Field(default_factory=SecuritySettings)
+    trading: TradingSettings = Field(default_factory=TradingSettings)
+    scheduler: SchedulerSettings = Field(default_factory=SchedulerSettings)
+    logging: LoggingSettings = Field(default_factory=LoggingSettings)
+    api: APISettings = Field(default_factory=APISettings)
+    
     # Configuration du modèle
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Initialiser les sous-configurations après l'initialisation principale
-        self.database = DatabaseSettings()
-        self.telegram = TelegramSettings()
-        self.deriv = DerivSettings()
-        self.binance = BinanceSettings()
-        self.mt5 = MT5Settings()
-        self.ib = IBSettings()
-        self.security = SecuritySettings()
-        self.trading = TradingSettings()
-        self.scheduler = SchedulerSettings()
-        self.logging = LoggingSettings()
-        self.api = APISettings()
 
 
 # Global settings instance

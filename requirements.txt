@@ -23,9 +23,9 @@ textblob==0.17.1
 newsapi-python==0.2.7
 requests==2.31.0
 
-# Database
-SQLAlchemy==2.0.23
-alembic==1.13.1
+# Database - VERSIONS MISES À JOUR POUR PYTHON 3.13
+SQLAlchemy>=2.0.27
+alembic>=1.13.1
 psycopg2-binary==2.9.9
 
 # Security
@@ -58,5 +58,4 @@ uvicorn>=0.30.0
 matplotlib>=3.8.0
 plotly==5.17.0
 Pillow>=10.2.0
-
 python-deriv-api==0.1.6

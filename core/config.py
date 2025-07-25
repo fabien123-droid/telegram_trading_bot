@@ -140,20 +140,23 @@ class AppSettings(BaseSettings):
     host: str = Field(default="0.0.0.0", env="HOST")
     port: int = Field(default=8000, env="PORT")
     
-    # Sub-configurations
-    database: DatabaseSettings = DatabaseSettings()
-    telegram: TelegramSettings = TelegramSettings()
-    deriv: DerivSettings = DerivSettings()
-    binance: BinanceSettings = BinanceSettings()
-    mt5: MT5Settings = MT5Settings()
-    ib: IBSettings = IBSettings()
-    security: SecuritySettings = SecuritySettings()
-    trading: TradingSettings = TradingSettings()
-    scheduler: SchedulerSettings = SchedulerSettings()
-    logging: LoggingSettings = LoggingSettings()
-    api: APISettings = APISettings()
-    
+    # Configuration du modèle
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Initialiser les sous-configurations après l'initialisation principale
+        self.database = DatabaseSettings()
+        self.telegram = TelegramSettings()
+        self.deriv = DerivSettings()
+        self.binance = BinanceSettings()
+        self.mt5 = MT5Settings()
+        self.ib = IBSettings()
+        self.security = SecuritySettings()
+        self.trading = TradingSettings()
+        self.scheduler = SchedulerSettings()
+        self.logging = LoggingSettings()
+        self.api = APISettings()
 
 
 # Global settings instance

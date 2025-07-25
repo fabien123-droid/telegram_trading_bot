@@ -203,8 +203,8 @@ class Trade(Base):
     opened_at = Column(DateTime, nullable=True)
     closed_at = Column(DateTime, nullable=True)
     
-    # Additional data
-    metadata = Column(JSON, nullable=True)  # Additional trade data
+    # Additional data - CORRIGÉ: metadata -> trade_metadata
+    trade_metadata = Column(JSON, nullable=True)  # Additional trade data
     notes = Column(Text, nullable=True)
     
     # Relationships
@@ -277,8 +277,8 @@ class SystemLog(Base):
     trade_id = Column(Integer, ForeignKey('trades.id'), nullable=True)
     signal_id = Column(Integer, ForeignKey('signals.id'), nullable=True)
     
-    # Additional data
-    metadata = Column(JSON, nullable=True)
+    # Additional data - CORRIGÉ: metadata -> log_metadata
+    log_metadata = Column(JSON, nullable=True)
     stack_trace = Column(Text, nullable=True)
     
     # Timestamp
@@ -376,8 +376,8 @@ class Notification(Base):
     # Priority
     priority = Column(String(20), default='normal', nullable=False)  # low, normal, high, urgent
     
-    # Additional data
-    metadata = Column(JSON, nullable=True)
+    # Additional data - CORRIGÉ: metadata -> notification_metadata
+    notification_metadata = Column(JSON, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, default=func.now(), nullable=False)
@@ -394,4 +394,3 @@ class Notification(Base):
     
     def __repr__(self):
         return f"<Notification(id={self.id}, user_id={self.user_id}, type='{self.type}')>"
-

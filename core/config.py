@@ -5,7 +5,8 @@ Handles environment variables and application settings.
 
 import os
 from typing import Optional, List
-from pydantic import BaseSettings, Field, validator
+from pydantic_settings import BaseSettings
+from pydantic import Field, field_validator
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -28,7 +29,8 @@ class TelegramSettings(BaseSettings):
     webhook_url: Optional[str] = Field(default=None, env="TELEGRAM_WEBHOOK_URL")
     admin_id: Optional[int] = Field(default=None, env="ADMIN_TELEGRAM_ID")
     
-    @validator('bot_token')
+    @field_validator('bot_token')
+    @classmethod
     def validate_bot_token(cls, v):
         if not v or v == "your_telegram_bot_token_here":
             raise ValueError("TELEGRAM_BOT_TOKEN must be set")
@@ -41,7 +43,8 @@ class DerivSettings(BaseSettings):
     app_id: str = Field(..., env="DERIV_APP_ID")
     api_url: str = Field(default="wss://ws.derivws.com/websockets/v3", env="DERIV_API_URL")
     
-    @validator('app_id')
+    @field_validator('app_id')
+    @classmethod
     def validate_app_id(cls, v):
         if not v or v == "your_deriv_app_id_here":
             raise ValueError("DERIV_APP_ID must be set")
@@ -80,7 +83,8 @@ class SecuritySettings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     jwt_expiration_hours: int = Field(default=24, env="JWT_EXPIRATION_HOURS")
     
-    @validator('encryption_key')
+    @field_validator('encryption_key')
+    @classmethod
     def validate_encryption_key(cls, v):
         if not v or len(v) < 32:
             raise ValueError("ENCRYPTION_KEY must be at least 32 characters long")
@@ -95,7 +99,8 @@ class TradingSettings(BaseSettings):
     min_trade_amount: float = Field(default=10.0, env="MIN_TRADE_AMOUNT")
     max_trade_amount: float = Field(default=1000.0, env="MAX_TRADE_AMOUNT")
     
-    @validator('default_risk_percentage')
+    @field_validator('default_risk_percentage')
+    @classmethod
     def validate_risk_percentage(cls, v):
         if v <= 0 or v > 100:
             raise ValueError("Risk percentage must be between 0 and 100")
@@ -148,9 +153,7 @@ class AppSettings(BaseSettings):
     logging: LoggingSettings = LoggingSettings()
     api: APISettings = APISettings()
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
 # Global settings instance
@@ -185,4 +188,3 @@ def validate_required_settings():
         raise ValueError(f"Configuration errors: {', '.join(errors)}")
     
     return True
-

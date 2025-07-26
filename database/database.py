@@ -13,9 +13,32 @@ from sqlalchemy.pool import StaticPool
 
 from loguru import logger
 
-from .models import Base
-from ..core.config import get_settings
-from ..core.exceptions import DatabaseError
+# Imports absolus depuis la racine
+try:
+    from database.models import Base
+    logger.info("Successfully imported database.models")
+except ImportError as e:
+    logger.warning(f"Failed to import database.models: {e}")
+    # Fallback temporaire - créer une Base simple
+    from sqlalchemy.ext.declarative import declarative_base
+    Base = declarative_base()
+    logger.info("Using fallback Base class")
+
+try:
+    from core.config import get_settings
+    logger.info("Successfully imported core.config")
+except ImportError as e:
+    logger.error(f"Failed to import core.config: {e}")
+    raise ImportError("Cannot import core.config - this is required")
+
+try:
+    from core.exceptions import DatabaseError
+    logger.info("Successfully imported core.exceptions")
+except ImportError as e:
+    logger.warning(f"Failed to import core.exceptions: {e}")
+    # Fallback
+    class DatabaseError(Exception):
+        pass
 
 
 class DatabaseManager:
@@ -32,7 +55,12 @@ class DatabaseManager:
         """Initialize database connections."""
         try:
             # Create engines
-            database_url = self.settings.database.url
+            database_url = getattr(self.settings, 'database_url', None)
+            
+            # Fallback pour une base SQLite simple si pas d'URL configurée
+            if not database_url:
+                database_url = "sqlite:///./trading_bot.db"
+                logger.info(f"Using default SQLite database: {database_url}")
             
             # Convert SQLite URL for async if needed
             if database_url.startswith('sqlite:///'):
@@ -43,7 +71,7 @@ class DatabaseManager:
             # Sync engine for migrations and initial setup
             self.engine = create_engine(
                 database_url,
-                echo=self.settings.database.echo,
+                echo=getattr(self.settings, 'debug', False),
                 pool_pre_ping=True,
                 connect_args={"check_same_thread": False} if "sqlite" in database_url else {}
             )
@@ -51,7 +79,7 @@ class DatabaseManager:
             # Async engine for application use
             self.async_engine = create_async_engine(
                 async_database_url,
-                echo=self.settings.database.echo,
+                echo=getattr(self.settings, 'debug', False),
                 pool_pre_ping=True,
                 connect_args={"check_same_thread": False} if "sqlite" in async_database_url else {}
             )
@@ -136,12 +164,21 @@ db_manager = DatabaseManager()
 
 async def init_database():
     """Initialize the database."""
-    await db_manager.initialize()
+    try:
+        await db_manager.initialize()
+        logger.info("✅ Database initialization completed")
+    except Exception as e:
+        logger.error(f"❌ Database initialization failed: {e}")
+        raise
 
 
 async def close_database():
     """Close database connections."""
-    await db_manager.close()
+    try:
+        await db_manager.close()
+        logger.info("✅ Database connections closed")
+    except Exception as e:
+        logger.error(f"❌ Error closing database: {e}")
 
 
 @asynccontextmanager
@@ -263,9 +300,10 @@ class DatabaseBackup:
         try:
             # This is a simplified backup for SQLite
             # For production, use proper backup tools
-            if 'sqlite' in db_manager.settings.database.url:
+            database_url = getattr(db_manager.settings, 'database_url', "sqlite:///./trading_bot.db")
+            if 'sqlite' in database_url:
                 import shutil
-                db_path = db_manager.settings.database.url.replace('sqlite:///', '')
+                db_path = database_url.replace('sqlite:///', '')
                 shutil.copy2(db_path, backup_path)
                 logger.info(f"Database backup created: {backup_path}")
                 return True
@@ -281,9 +319,10 @@ class DatabaseBackup:
         """Restore database from backup."""
         try:
             # This is a simplified restore for SQLite
-            if 'sqlite' in db_manager.settings.database.url:
+            database_url = getattr(db_manager.settings, 'database_url', "sqlite:///./trading_bot.db")
+            if 'sqlite' in database_url:
                 import shutil
-                db_path = db_manager.settings.database.url.replace('sqlite:///', '')
+                db_path = database_url.replace('sqlite:///', '')
                 
                 # Close connections first
                 await db_manager.close()
@@ -302,4 +341,3 @@ class DatabaseBackup:
         except Exception as e:
             logger.error(f"Database restore failed: {e}")
             return False
-

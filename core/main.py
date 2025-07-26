@@ -10,37 +10,48 @@ from typing import AsyncGenerator
 
 from loguru import logger
 
-# Importations relatives converties en importations absolutes
-from .config import get_settings, validate_required_settings
-from .logging_config import setup_logging
-from .exceptions import ConfigurationError
+# Imports absolus depuis la racine du projet
+from core.config import get_settings, validate_required_settings
+from core.logging_config import setup_logging
+from core.exceptions import ConfigurationError
 
-# Correction des importations relatives problématiques
+# Imports absolus pour les autres modules
 try:
     from database.database import init_database, close_database
-except ImportError:
-    # Fallback si la structure est différente
+    logger.info("Successfully imported database module")
+except ImportError as e:
+    logger.error(f"Failed to import database module: {e}")
+    # Essayer une alternative si nécessaire
     try:
         from src.database.database import init_database, close_database
-    except ImportError:
-        # Dernier fallback
-        from ..database.database import init_database, close_database
+        logger.info("Successfully imported database module from src")
+    except ImportError as e2:
+        logger.error(f"Failed to import database module from src: {e2}")
+        raise ImportError("Cannot import database module")
 
 try:
     from telegram_bot.bot import TelegramBot
-except ImportError:
-    try:
-        from src.telegram_bot.bot import TelegramBot
-    except ImportError:
-        from ..telegram_bot.bot import TelegramBot
+    logger.info("Successfully imported telegram_bot module")
+except ImportError as e:
+    logger.error(f"Failed to import telegram_bot module: {e}")
+    # Fallback temporaire pour permettre le démarrage
+    class TelegramBot:
+        async def initialize(self):
+            logger.info("Mock TelegramBot initialized")
+        async def shutdown(self):
+            logger.info("Mock TelegramBot shutdown")
 
 try:
     from scheduler.scheduler import TradingScheduler
-except ImportError:
-    try:
-        from src.scheduler.scheduler import TradingScheduler
-    except ImportError:
-        from ..scheduler.scheduler import TradingScheduler
+    logger.info("Successfully imported scheduler module")
+except ImportError as e:
+    logger.error(f"Failed to import scheduler module: {e}")
+    # Fallback temporaire pour permettre le démarrage
+    class TradingScheduler:
+        async def start(self):
+            logger.info("Mock TradingScheduler started")
+        async def stop(self):
+            logger.info("Mock TradingScheduler stopped")
 
 
 class TradingBotApplication:

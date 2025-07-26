@@ -7,6 +7,7 @@ from typing import Optional, AsyncGenerator
 from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine, event
+from sqlalchemy.engine import Engine  # ← Import ajouté pour corriger l'erreur
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
@@ -193,23 +194,30 @@ def get_sync_db_session() -> Session:
     return db_manager.get_sync_session()
 
 
-# Database event listeners for SQLite
-@event.listens_for(create_engine, "connect")
+# Database event listeners for SQLite - CORRECTION ICI
+@event.listens_for(Engine, "connect")  # ✅ CORRIGÉ : Engine au lieu de create_engine
 def set_sqlite_pragma(dbapi_connection, connection_record):
     """Set SQLite pragmas for better performance and reliability."""
-    if 'sqlite' in str(dbapi_connection):
-        cursor = dbapi_connection.cursor()
-        # Enable foreign key constraints
-        cursor.execute("PRAGMA foreign_keys=ON")
-        # Set journal mode to WAL for better concurrency
-        cursor.execute("PRAGMA journal_mode=WAL")
-        # Set synchronous mode to NORMAL for better performance
-        cursor.execute("PRAGMA synchronous=NORMAL")
-        # Set cache size
-        cursor.execute("PRAGMA cache_size=10000")
-        # Set temp store to memory
-        cursor.execute("PRAGMA temp_store=MEMORY")
-        cursor.close()
+    try:
+        # Vérifier si c'est une connexion SQLite
+        connection_info = str(dbapi_connection)
+        if 'sqlite' in connection_info.lower():
+            cursor = dbapi_connection.cursor()
+            # Enable foreign key constraints
+            cursor.execute("PRAGMA foreign_keys=ON")
+            # Set journal mode to WAL for better concurrency
+            cursor.execute("PRAGMA journal_mode=WAL")
+            # Set synchronous mode to NORMAL for better performance
+            cursor.execute("PRAGMA synchronous=NORMAL")
+            # Set cache size
+            cursor.execute("PRAGMA cache_size=10000")
+            # Set temp store to memory
+            cursor.execute("PRAGMA temp_store=MEMORY")
+            cursor.close()
+            logger.debug("SQLite pragmas configured successfully")
+    except Exception as e:
+        # Ne pas faire planter l'application si les PRAGMA échouent
+        logger.warning(f"Failed to set SQLite pragmas: {e}")
 
 
 class DatabaseHealthCheck:
